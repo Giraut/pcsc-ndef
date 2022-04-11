@@ -116,6 +116,7 @@ class pcsc_ndef():
     write at each chunk read or written, and whether it's called for the last
     time or not.
     Returns (None, None, ...) if no error, (errmsg, err_critical_flag, None)
+    otherwise.
     """
 
     hcard = None
