@@ -12,11 +12,11 @@ Installation
 
    Install the file as root:
 
-     install -m 755 t4t_ndef.py /usr/bin/t4t_ndef
+     install -m 755 pcsc_ndef.py /usr/bin/pcsc_ndef
 
    Optionally, you can also install everything from a pre-build Debian package:
 
-     sudo apt install t4t-ndef
+     sudo apt install pcsc_ndef
 
 
 
