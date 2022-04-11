@@ -1,0 +1,43 @@
+                                   PC/SC NDEF
+                                   ----------
+                                     v0.0.1
+
+Utility to read or write NDEF data to/from a NFC forum type 2 or type 4 tag
+using PC/SC
+
+
+
+Installation
+------------
+
+   Install the file as root:
+
+     install -m 755 t4t_ndef.py /usr/bin/t4t_ndef
+
+   Optionally, you can also install everything from a pre-build Debian package:
+
+     sudo apt install t4t-ndef
+
+
+
+Usage
+-----
+
+   pcsc_ndef -t2 read > data.ndef   # Read NDEF from a T2 tag, output to stdout
+   pcsc_ndef -t4 read -o data.ndef  # Read NDEF from a T4 tag, save to a file
+   pcsc_ndef -t2 write < data.ndef  # Write NDEF from stdin
+   pcsc_ndef -t4 write -i data.ndef # Write NDEF from a file
+   pcsc_ndef -t2 -w2 read           # Read NDEF, wait for tag no longer than 2s
+   pcsc_ndef -t4 -w0 read           # Read NDEF, fail at once if no tag present
+   pcsc_ndef -r ACS -t2 read        # Use first reader whose name contains "ACS"
+   pcsc_ndef -h                    # Display help
+   pcsc_ndef read -h               # Display help on the read command
+   pcsc_ndef write -h              # Display help on the write command
+
+
+
+           ---------------------------------------------------------
+                   Bug reports? Questions? You can email me.
+                   Run this command to get my email address:
+           C=base64\ -d;$C<<<Y205emEybHpRSEoxYm1KdmVDNWpiMjBLCg==|$C
+           ---------------------------------------------------------

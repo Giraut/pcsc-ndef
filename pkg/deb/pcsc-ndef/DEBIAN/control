@@ -1,0 +1,7 @@
+Package: pcsc-ndef
+Version:
+Maintainer: Rosco <roskis@runbox.com>
+Description: Utility to read or write NDEF data to/from a NFC forum type 2 or type 4 tag using PC/SC
+Homepage: https://github.com/Giraut/t4t-ndef
+Architecture: all
+Depends: python3 (>=3.5), python3-pyscard, pcscd
