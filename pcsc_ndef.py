@@ -379,7 +379,7 @@ class pcsc_ndef():
           data = tl + list(data)
           ndef_size += len(tl)
 
-          # Add the TERMINATOR TLV at the end of the NDEF TLV
+          # Add the terminator TLV at the end of the NDEF TLV
           data += [self.TERMINATOR_TAG, 0x00]
           ndef_size += 2
 
