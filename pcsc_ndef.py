@@ -192,16 +192,19 @@ class pcsc_ndef():
         errmsg = "no matching readers"
         break
 
+      # Whatever happens next, release the context so other application may
+      # access the card if we can't
+      release_ctx = True
+
       # Connect to the smartcard
       try:
         r, hcard, dwActiveProtocol = sc.SCardConnect(self.hcontext,
-							self.reader,
-							sc.SCARD_SHARE_SHARED,
-							sc.SCARD_PROTOCOL_T0 | \
-							sc.SCARD_PROTOCOL_T1)
+						self.reader,
+						sc.SCARD_SHARE_EXCLUSIVE,
+						sc.SCARD_PROTOCOL_T0 | \
+						sc.SCARD_PROTOCOL_T1)
 
       except Exception as e:
-        release_ctx = True
         errmsg = "error connecting to the smartcard: {}".format(e)
         continue
 
