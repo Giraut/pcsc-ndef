@@ -119,15 +119,11 @@ class pcsc_ndef():
     otherwise.
     """
 
-    hcard = None
-
     errmsg = None
     errcritical = True
 
     disconnect_card = False
     release_ctx = False
-
-    ndef = None
 
     while True:
 
