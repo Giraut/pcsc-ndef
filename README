@@ -1,6 +1,6 @@
                                    PC/SC NDEF
                                    ----------
-                                     v0.0.4
+                                     v0.0.5
 
 Utility to read or write NDEF data to/from a NFC forum type 2 or type 4 tag
 using PC/SC
