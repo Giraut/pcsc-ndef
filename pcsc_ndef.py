@@ -10,7 +10,8 @@ pcsc_ndef.py -t2 write < data.ndef  # Write NDEF from stdin
 pcsc_ndef.py -t4 write -i data.ndef # Write NDEF from a file
 pcsc_ndef.py -t2 -w2 read           # Read NDEF, wait for tag no longer than 2s
 pcsc_ndef.py -t4 -w0 read           # Read NDEF, fail at once if no tag present
-pcsc_ndef.py -r ACS -t2 read        # Use first reader whose name contains "ACS"
+pcsc_ndef.py -t2 getmax             # Get the maximum NDEF size the tag can hold
+pcsc_ndef.py -r ACS -t4 read        # Use first reader whose name contains "ACS"
 pcsc_ndef.py -h                     # Display help
 pcsc_ndef.py read -h                # Display help on the read command
 pcsc_ndef.py write -h               # Display help on the write command
@@ -107,10 +108,13 @@ class pcsc_ndef():
 
 
 
-  def rw_ndef(self, tagtype, data = None, progress_feedback = None):
+  def rw_ndef(self, tagtype, data = None, get_max_size = False,
+		 progress_feedback = None):
     """Try to establish communication with the tag, then read or write NDEF
     data to/from it. if data is None, the NDEF is read and returned. If not,
     the NDEF data is written.
+    If get_max_size is asserted, nothing is read or written, but rather the
+    maximum NDEF size the tag can hold is returned.
     If a function is passed in progress_feedback, this function is called with
     the number of bytes read or written, the total number of bytes to read or
     write at each chunk read or written, and whether it's called for the last
@@ -265,6 +269,11 @@ class pcsc_ndef():
 				# is over 0xff
         max_ndef_size -= 2	# ...then subtract the space taken up by the
 				# terminator TLV
+
+        # If we were asked to return the maximum NDEF size, do so
+        if get_max_size:
+          data = max_ndef_size
+          continue
 
         # Make sure the NDEF will fit if we write it
         if data is not None and len(data) > max_ndef_size:
@@ -557,7 +566,11 @@ class pcsc_ndef():
         max_r_apdu = (response[3] << 8) + response[4]
         max_c_apdu = (response[5] << 8) + response[6]
         ndef_data_fid = [response[9], response[10]]
-        max_ndef_size = (response[11] << 8) + response[12]
+        max_ndef_file_size = (response[11] << 8) + response[12]
+
+        max_ndef_size = max_ndef_file_size - 2	# Subtract 2 bytes for the
+						# leading length value to get
+						# the actual maximum NDEF size
 
         # Some tags (i.e. OpenJavaCard NDEF applet) seem to throw a fit and
         # return SW_WRONG_LENGTH (0x6700) if we try to read as much data per
@@ -565,7 +578,10 @@ class pcsc_ndef():
         # size of the response APDU as a workaround.
         max_r_apdu = 60
 
-        max_ndef_size -= 2	# Count 2 leading bytes for the size
+        # If we were asked to return the maximum NDEF size, do so
+        if get_max_size:
+          data = max_ndef_size
+          continue
 
         # Make sure the NDEF will fit if we write it
         if data is not None and len(data) > max_ndef_size:
@@ -741,6 +757,14 @@ class pcsc_ndef():
 
 
 
+  def get_max_size(self, tagtype):
+    """Return the maximum NDEF size the tag can hold
+    """
+
+    return self.rw_ndef(tagtype = tagtype, get_max_size = True)
+
+
+
 ### Routines
 def progress_feedback(nb, total, lasttime):
   """Print a progress feedback on stderr. If last is asserted, the function is
@@ -779,6 +803,11 @@ def main():
   subparser_write = subparsers.add_parser(
 	"write",
 	help = "Write NDEF content to a tag"
+	)
+
+  subparser_getmax = subparsers.add_parser(
+	"getmax",
+	help = "Get the maximum NDEF size the tag can hold"
 	)
 
   # Main parser's epilog
@@ -830,6 +859,8 @@ def main():
 
   args = argparser.parse_args()
 
+  getmax = args.command == "getmax"
+
   # If we write the NDEF, read in the data to write
   if args.command == "write":
 
@@ -861,6 +892,7 @@ def main():
     # Try to read or write the NDEF data to/from the tag
     errmsg, errcritical, data_out = pn.rw_ndef(tagtype = args.type,
 						data = data_in,
+						get_max_size = getmax,
 						progress_feedback = \
 							progress_feedback)
     if errmsg and errcritical:
@@ -879,8 +911,14 @@ def main():
     print("No tag found", file = sys.stderr)
     return -1
 
-  # Save the data or write it to stdout
-  if data_out is not None:
+  # If we were asked to get the maximum NDEF size, print it. Otherwise save the
+  # data or write it to stdout
+  if getmax:
+    print(data_out)
+    return 0
+
+  # Otherwise save the read data or write it to stdout
+  elif data_out is not None:
 
     if args.output == "-":
       sys.stdout.buffer.write(data_out)
